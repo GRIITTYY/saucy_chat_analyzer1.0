@@ -1,0 +1,8 @@
+pandas
+plotly
+nltk
+datetime
+wordcloud
+seaborn
+streamlit_option_menu 
+python-dateutil

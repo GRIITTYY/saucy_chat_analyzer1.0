@@ -84,34 +84,48 @@ def get_week_of_month(day):
 # Create function to process data
 @st.cache_data
 def process_chat_file(uploaded_file):
-    with zipfile.ZipFile(uploaded_file, 'r') as zip_ref: 
-        # Find a .txt file
-        txt_files = [f for f in zip_ref.namelist() if f.endswith('.txt')]
-        if txt_files:
-            target_file = txt_files[0]  # Extract the first .txt file found
-            zip_ref.extract(target_file) 
-            logging.debug("Unzipped Successfully")
-            text_file_path = target_file
-            logging.debug("Done with txt file")
-        else:
-            st.divider()
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.write(' ')
-            with col2:
-                st.image("error.jpeg")
-            with col3:
-                st.write(' ')
-            st.error("No valid whatsapp chat data found in your uploaded zip file.")
-            st.warning("Please upload a valid whatsapp chat file to proceed with the analysis")
-            st.stop()
+    try:
+        with zipfile.ZipFile(uploaded_file, 'r') as zip_ref: 
+            # Find a .txt file
+            txt_files = [f for f in zip_ref.namelist() if f.endswith('.txt')]
+            if txt_files:
+                target_file = txt_files[0]  # Extract the first .txt file found
+                zip_ref.extract(target_file) 
+                logging.debug("Unzipped Successfully")
+                text_file_path = target_file
+                logging.debug("Done with txt file")
+            else:
+                st.divider()
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.write(' ')
+                with col2:
+                    st.image("assets/error.jpeg")
+                with col3:
+                    st.write(' ')
+                st.error("No valid whatsapp chat data found in your uploaded zip file.", icon="🚫")
+                st.warning("Please upload a valid whatsapp chat file to proceed with the analysis", icon="❗")
+                st.stop()
+    except RuntimeError:
+        st.divider()
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(' ')
+        with col2:
+            st.image("assets/error.jpeg")
+        with col3:
+            st.write(' ')
+        st.error("Sorry, we can't process password protected files at the moment", icon="🚫")
+        st.warning("Please upload a valid whatsapp chat file to proceed with the analysis", icon="❗")
+        st.stop()
 
     # Open the txt file and read content to a variable
     with open(text_file_path, 'r', encoding='utf-8') as file:
         chat_data = file.readlines()
-        # # delete the file
-        # os.remove(text_file_path)
-        # logging.debug("Text file deleted")
+
+    # # delete the file
+    os.remove(text_file_path)
+    logging.debug("Text file deleted")
 
 
     # Create and process DataFrame from chat data
@@ -210,6 +224,8 @@ if uploaded_file == None:
         """)
     st.warning("Please upload a chat file to proceed with the analysis")
     st.caption("Use the upload button in the sidebar")
+    st.session_state.clear()
+
 
 else:
     st.sidebar.image("assets/saucy.jpeg")
@@ -275,7 +291,13 @@ else:
         hour_message_count = df['hour'].value_counts().reset_index()
         hour_message_count["timecategory"] = hour_message_count['hour'].apply(categorize_time)
 
-        st.divider()
+        st.markdown(
+                    """
+                    <hr style="border: none; height: 2px; background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+                    """,
+                    unsafe_allow_html=True
+                    )
+        
         st.info("📊 Hourly Message Distribution", icon="ℹ️")
         
         col1, col2 = st.columns([1, 1])
@@ -356,8 +378,12 @@ else:
             # Display the chart with custom width
             st.plotly_chart(fig, use_container_width=True)
             st.caption("Feel free to zoom-in, pan and download the chart above")
-
-        st.divider()
+        st.markdown(
+                    """
+                    <hr style="border: none; height: 2px; background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+                    """,
+                    unsafe_allow_html=True
+                    )
 
 
         st.markdown("""
@@ -421,15 +447,7 @@ else:
             ).sort_values(by='count', ascending=False)
 
         # Display header
-        st.markdown('<p class="word-analysis-header">Top 50 Most Used Words by Each Participant of the chat</p>', unsafe_allow_html=True)
-
-        # Show user selection if applicable
-        if len(people) == 2:
-            selected_user = st.sidebar.radio(
-                "Pick your identity", 
-                options=people,
-                key='user_identity'
-            )
+        st.markdown('<p class="word-analysis-header" style="">Top 50 Most Used Words by Each Participant of the chat</p>', unsafe_allow_html=True)
 
         # Create columns for word clouds and data
         cols = st.columns(2)
@@ -476,10 +494,13 @@ else:
                     use_container_width=True
                 )
 
-        # Navigation hint
-        st.info("🚀 Don't forget to check out the 'More Insights Page' for additional analysis! 📊", icon="ℹ️")
-    
-        st.divider()
+        
+        st.markdown(
+                    """
+                    <hr style="border: none; height: 2px; background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+                    """,
+                    unsafe_allow_html=True
+                    )
         
         col1, col2 = st.columns(2)
         with col1:
@@ -507,7 +528,13 @@ else:
             st.success(f"{top_3_days[0]}s, {top_3_days[1]}s and {top_3_days[2]}s are the 3 most active days of your chat", icon="✅")
             
             
-        st.divider()
+        st.markdown(
+                    """
+                    <hr style="border: none; height: 2px; background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);">
+                    """,
+                    unsafe_allow_html=True
+                    )
+
         # third Plot
         st.markdown("""<h3 style="font-size: 30px; text-align: center; color: green; font-weight: bold;">Yearly activity</h3>""", unsafe_allow_html=True)
         yearly_count = list(df["year"].value_counts().nlargest(3).index)
@@ -521,7 +548,11 @@ else:
         yearly_activity_fig = px.bar(yearly_activity, y="year", x="count", color="sender", template="plotly", labels={"year":"Year", "count":"Total Message"}, text="count")
         yearly_activity_fig.update_traces(textposition="inside", insidetextanchor="middle", textfont={"size":17})
         st.plotly_chart(yearly_activity_fig)
-        st.info(f"{yearly_count[0]} is the most active year of your chat.", icon="🌟")
+        st.success(f"{yearly_count[0]} is the most active year of your chat.", icon="🌟")
+
+        # Navigation hint
+        st.info("🚀 Check out the 'More Insights Page' for additional analysis! 📊", icon="ℹ️")
+    
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 

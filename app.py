@@ -19,7 +19,7 @@ import seaborn as sns
 from matplotlib import rcParams
 
 # Put logging on DEBUG MODE
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 # Turn off DEBUG MODE
 logging.basicConfig(level=logging.CRITICAL)
 
